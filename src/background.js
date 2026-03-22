@@ -12,7 +12,7 @@ import { analyzeProduct } from './api.js';
 
 /* ─── Config ─── */
 
-const SERPAPI_KEY = 'afc61564d200c81a4e7fdb2eb518c1ba8d420d97977eafd1c6cbdf1d7538e999';
+const SERPAPI_KEY = 'Your_API_Key';
 
 /* ─── Message Listener ─── */
 

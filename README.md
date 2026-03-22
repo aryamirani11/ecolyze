@@ -158,4 +158,4 @@ Ecolyze was built for the **Sustainability Track** at HackDuke. The core premise
 
 **Arya Mirani** · **Kunal Toomu**
 
-[ecolyze.us](https://ecolyze.us)
+**Join The Movement!** [Ecolyze](https://shopecolyze.netlify.app)

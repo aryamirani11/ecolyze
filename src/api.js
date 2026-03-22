@@ -10,7 +10,7 @@
 
 /* ─── Config ─── */
 
-const API_KEY = 'AIzaSyC1Xsp39CBeu8qR4gFSHa9P5VyLZNH77sw'; // ← Replace with your Gemini API key
+const API_KEY = 'YOUR_API_KEY'; // ← Replace with your Gemini API key
 const MODEL = 'gemini-3.1-flash-lite-preview';
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
 const TIMEOUT_MS = 30_000; // 30-second safety net

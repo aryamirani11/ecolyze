@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ecolyze — Join the Waitlist</title>
+  <!-- Supabase JS client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --moss:    #2d4a2d;
+      --fern:    #4a7c59;
+      --sage:    #8aad8a;
+      --mist:    #d6e8d6;
+      --cream:   #f5f0e8;
+      --bark:    #3b2f1e;
+      --gold:    #c9a84c;
+      --white:   #fdfcf9;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--cream);
+      color: var(--bark);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ── Background texture ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 15% 10%, rgba(74,124,89,.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 90% 85%, rgba(45,74,45,.15) 0%, transparent 55%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234a7c59' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Leaf decorations ── */
+    .leaf {
+      position: fixed;
+      pointer-events: none;
+      opacity: 0.07;
+      z-index: 0;
+    }
+    .leaf-1 { top: -60px; left: -40px; width: 340px; transform: rotate(-20deg); }
+    .leaf-2 { bottom: -80px; right: -60px; width: 420px; transform: rotate(160deg); }
+    .leaf-3 { top: 40%; left: -120px; width: 260px; transform: rotate(30deg); opacity: 0.05; }
+
+    /* ── Layout ── */
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+    }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--moss);
+      color: var(--mist);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 7px 18px;
+      border-radius: 100px;
+      margin-bottom: 36px;
+      opacity: 0;
+      animation: fadeUp .6s .1s forwards;
+    }
+    .badge-dot {
+      width: 7px; height: 7px;
+      background: var(--gold);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .5; transform: scale(.7); }
+    }
+
+    /* ── Headline ── */
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(42px, 7vw, 80px);
+      line-height: 1.06;
+      color: var(--moss);
+      text-align: center;
+      max-width: 700px;
+      opacity: 0;
+      animation: fadeUp .7s .2s forwards;
+    }
+    h1 em {
+      font-style: italic;
+      color: var(--fern);
+    }
+
+    /* ── Subhead ── */
+    .sub {
+      margin-top: 22px;
+      font-size: clamp(15px, 2vw, 18px);
+      line-height: 1.65;
+      color: var(--fern);
+      text-align: center;
+      max-width: 480px;
+      opacity: 0;
+      animation: fadeUp .7s .35s forwards;
+    }
+
+    /* ── Divider leaf ── */
+    .divider {
+      margin: 40px auto;
+      opacity: 0;
+      animation: fadeUp .5s .45s forwards;
+    }
+
+    /* ── Form card ── */
+    .card {
+      background: var(--white);
+      border: 1px solid rgba(74,124,89,.18);
+      border-radius: 20px;
+      padding: 40px 44px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 8px 48px rgba(45,74,45,.10), 0 2px 8px rgba(45,74,45,.06);
+      opacity: 0;
+      animation: fadeUp .7s .5s forwards;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--fern);
+      margin-bottom: 8px;
+    }
+
+    .field { margin-bottom: 20px; }
+
+    input[type="text"],
+    input[type="email"] {
+      width: 100%;
+      padding: 14px 18px;
+      border: 1.5px solid var(--mist);
+      border-radius: 10px;
+      background: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--bark);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    input[type="text"]:focus,
+    input[type="email"]:focus {
+      border-color: var(--fern);
+      box-shadow: 0 0 0 3px rgba(74,124,89,.12);
+    }
+    input::placeholder { color: var(--sage); }
+
+    /* ── Button ── */
+    button {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 10px;
+      background: var(--moss);
+      color: var(--mist);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: .04em;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: background .25s, transform .15s;
+    }
+    button:hover  { background: var(--fern); transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+
+    button .btn-leaf {
+      display: inline-block;
+      margin-right: 8px;
+      transition: transform .3s;
+    }
+    button:hover .btn-leaf { transform: rotate(20deg); }
+
+    /* ── Success state ── */
+    .success {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+      padding: 12px 0;
+    }
+    .success-icon {
+      width: 56px; height: 56px;
+      background: var(--mist);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+    }
+    .success h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      color: var(--moss);
+    }
+    .success p { font-size: 14px; color: var(--fern); line-height: 1.6; }
+
+    /* ── Footer note ── */
+    .note {
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--sage);
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp .5s .65s forwards;
+    }
+
+    /* ── Social proof ── */
+    .proof {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 32px;
+      font-size: 13px;
+      color: var(--fern);
+      opacity: 0;
+      animation: fadeUp .5s .75s forwards;
+    }
+    .avatars { display: flex; }
+    .avatars span {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 2px solid var(--white);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      margin-left: -8px;
+    }
+    .avatars span:first-child { margin-left: 0; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Error message ── */
+    .error-msg {
+      display: none;
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: #fff0f0;
+      border: 1px solid #f5c6c6;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #c0392b;
+      text-align: center;
+    }
+    /* ── Button loading state ── */
+    button.loading { pointer-events: none; opacity: .75; }
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(214,232,214,.4);
+      border-top-color: var(--mist);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 500px) {
+      .card { padding: 28px 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Leaf SVG decorations -->
+<svg class="leaf leaf-1" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M150 10 C250 50 290 150 150 290 C10 150 50 50 150 10Z" fill="#2d4a2d"/>
+  <path d="M150 10 L150 290" stroke="#4a7c59" stroke-width="3"/>
+</svg>
+<svg class="leaf leaf-2" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M150 10 C250 50 290 150 150 290 C10 150 50 50 150 10Z" fill="#2d4a2d"/>
+  <path d="M150 10 L150 290" stroke="#4a7c59" stroke-width="3"/>
+</svg>
+<svg class="leaf leaf-3" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M150 10 C250 50 290 150 150 290 C10 150 50 50 150 10Z" fill="#2d4a2d"/>
+</svg>
+
+<div class="page">
+
+  <div class="badge">
+    <span class="badge-dot"></span>
+    Now accepting early access
+  </div>
+
+  <h1>Shop with purpose.<br><em>Live sustainably.</em></h1>
+
+  <p class="sub">Shop smarter, live greener. Ecolyze scans products and surfaces ethical alternatives so every purchase counts.</p>
+
+  <!-- small leaf divider -->
+  <svg class="divider" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 2 C26 8 30 18 16 30 C2 18 6 8 16 2Z" fill="#4a7c59" opacity=".5"/>
+    <path d="M16 2 L16 30" stroke="#4a7c59" stroke-width="1.5" opacity=".6"/>
+  </svg>
+
+  <div class="card">
+    <!-- Form -->
+    <div id="form-wrap">
+      <div class="field">
+        <label for="name">Your name</label>
+        <input type="text" id="name" placeholder="Ada Lovelace" autocomplete="name" />
+      </div>
+      <div class="field">
+        <label for="email">Email address</label>
+        <input type="email" id="email" placeholder="ada@example.com" autocomplete="email" />
+      </div>
+      <button id="submit-btn" onclick="handleSubmit()">
+        <span class="btn-leaf">🌿</span> Join the waitlist
+      </button>
+      <div class="error-msg" id="error-msg"></div>
+    </div>
+
+    <!-- Success -->
+    <div class="success" id="success">
+      <div class="success-icon">🌱</div>
+      <h3>You're on the list!</h3>
+      <p>We'll reach out as soon as your spot is ready. Thanks for joining the Ecolyze journey.</p>
+    </div>
+  </div>
+
+  <p class="note">🔒 No spam, ever. Unsubscribe any time.</p>
+
+  <div class="proof">
+    <div class="avatars">
+      <span style="background:#c8dfc8">🧑</span>
+      <span style="background:#b9d4c0">👩</span>
+      <span style="background:#a8c9af">🧔</span>
+    </div>
+    <span>Join <strong id="waitlist-count">...</strong> people already waiting</span>
+  </div>
+
+</div>
+
+<script>
+  // ─────────────────────────────────────────────
+  // 🔧 CONFIGURATION — replace with your values
+  // ─────────────────────────────────────────────
+  const SUPABASE_URL    = 'https://vvmjnkcrlvodwvzbbhra.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2bWpua2NybHZvZHd2emJiaHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNDM5MTcsImV4cCI6MjA4OTcxOTkxN30.anF61KIjO5dl4B1uTYnVCFukBKzBe5axvIbkfpJU4ik';
+  const TABLE_NAME      = 'waitlist'; // your Supabase table name
+  // ─────────────────────────────────────────────
+
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Load live signup count on page load
+  async function loadCount() {
+    try {
+      const { count, error } = await db
+        .from(TABLE_NAME)
+        .select('*', { count: 'exact', head: true });
+      if (!error && count !== null) {
+        document.getElementById('waitlist-count').textContent =
+          count >= 1000 ? (count / 1000).toFixed(1) + 'k+' : count + '+';
+      }
+    } catch (_) {
+      document.getElementById('waitlist-count').textContent = '400+';
+    }
+  }
+  loadCount();
+
+  async function handleSubmit() {
+    const nameEl  = document.getElementById('name');
+    const emailEl = document.getElementById('email');
+    const btn     = document.getElementById('submit-btn');
+    const errEl   = document.getElementById('error-msg');
+    const name    = nameEl.value.trim();
+    const email   = emailEl.value.trim();
+
+    errEl.style.display = 'none';
+
+    if (!name)  { nameEl.focus();  shake(nameEl);  return; }
+    if (!email || !email.includes('@')) { emailEl.focus(); shake(emailEl); return; }
+
+    // Loading state
+    btn.classList.add('loading');
+    btn.innerHTML = '<span class="spinner"></span> Joining…';
+
+    try {
+      const { error } = await db.from(TABLE_NAME).insert({ name, email });
+
+      if (error) {
+        if (error.code === '23505') {
+          // Unique constraint — already signed up
+          showError("You're already on the list! We'll be in touch soon. 🌱");
+        } else {
+          showError('Something went wrong. Please try again.');
+          console.error(error);
+        }
+        btn.classList.remove('loading');
+        btn.innerHTML = '<span class="btn-leaf">🌿</span> Join the waitlist';
+        return;
+      }
+
+      // Success!
+      document.getElementById('form-wrap').style.display = 'none';
+      const s = document.getElementById('success');
+      s.style.display = 'flex';
+      s.animate(
+        [{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }],
+        { duration: 500, fill: 'forwards' }
+      );
+      loadCount(); // refresh count
+
+    } catch (err) {
+      showError('Network error — please check your connection.');
+      btn.classList.remove('loading');
+      btn.innerHTML = '<span class="btn-leaf">🌿</span> Join the waitlist';
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function shake(el) {
+    el.animate([
+      { transform: 'translateX(0)' },
+      { transform: 'translateX(-6px)' },
+      { transform: 'translateX(6px)' },
+      { transform: 'translateX(-4px)' },
+      { transform: 'translateX(0)' }
+    ], { duration: 320, easing: 'ease-out' });
+    el.style.borderColor = '#c0392b';
+    setTimeout(() => el.style.borderColor = '', 800);
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') handleSubmit(); });
+</script>
+</body>
+</html>

@@ -107,11 +107,8 @@ var Ecolyze = window.Ecolyze || {};
   /*  SVG BUILDERS                                                      */
   /* ═══════════════════════════════════════════════════════════════════ */
 
-  const LEAF_ICON = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none"
-    stroke="#16a34a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66L7 18c4-2 7-4 9-8"/>
-    <path d="M17 8c2-2 4-5 4-7-2 0-5 2-7 4"/>
-  </svg>`;
+  // Using chrome.runtime.getURL to safely load the local extension image in the host page
+  const LEAF_ICON = `<img src="${chrome.runtime.getURL('icons/ecolyzeLogo.png')}" alt="Ecolyze Logo" style="width: 20px; height: 20px; object-fit: contain; border-radius: 4px;" />`;
 
   function buildScoreRing(score, max) {
     const r    = 30;

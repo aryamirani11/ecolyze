@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ecolyze</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ═══════════════════════════════════════════════════════════════════
+       Ecolyze Popup — Embedded Styles
+       ═══════════════════════════════════════════════════════════════════ */
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 320px;
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f1117;
+      color: #e5e7eb;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ─── Header ─── */
+
+    .eco-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 18px 6px;
+    }
+
+    .eco-header__icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 9px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .eco-logo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+
+
+    .eco-header__text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .eco-header__brand {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -.3px;
+      color: #f9fafb;
+    }
+
+    .eco-header__tagline {
+      font-size: 11px;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    /* ─── Divider ─── */
+
+    .eco-divider {
+      height: 1px;
+      background: #1f2937;
+      margin: 10px 18px;
+    }
+
+    /* ─── Analyze Button ─── */
+
+    #eco-cta-section {
+      padding: 6px 18px 16px;
+      text-align: center;
+    }
+
+    #eco-cta-section p {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    #analyze-btn {
+      width: 100%;
+      padding: 11px 0;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform .12s ease, box-shadow .15s ease, opacity .15s;
+      box-shadow: 0 2px 12px rgba(22, 163, 74, .3);
+    }
+
+    #analyze-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(22, 163, 74, .45);
+    }
+
+    #analyze-btn:active {
+      transform: translateY(0) scale(.98);
+    }
+
+    /* ─── Loading State ─── */
+
+    #eco-loading {
+      display: none;
+      padding: 32px 18px;
+      text-align: center;
+    }
+
+    #eco-loading.eco--active {
+      display: block;
+    }
+
+    .eco-loader__leaf {
+      display: inline-block;
+      animation: eco-pulse 1.2s ease-in-out infinite;
+    }
+
+    .eco-loader__text {
+      margin-top: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #9ca3af;
+    }
+
+    .eco-loader__subtext {
+      font-size: 11px;
+      color: #4b5563;
+      margin-top: 4px;
+    }
+
+    @keyframes eco-pulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: .7;
+      }
+
+      50% {
+        transform: scale(1.15);
+        opacity: 1;
+      }
+    }
+
+    /* ─── Error State ─── */
+
+    #eco-error {
+      display: none;
+      padding: 12px 18px 16px;
+    }
+
+    #eco-error.eco--active {
+      display: block;
+    }
+
+    .eco-error__card {
+      background: rgba(239, 68, 68, .08);
+      border: 1px solid rgba(239, 68, 68, .2);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .eco-error__title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fca5a5;
+      margin-bottom: 4px;
+    }
+
+    .eco-error__msg {
+      font-size: 11.5px;
+      color: #9ca3af;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    #retry-btn {
+      padding: 8px 20px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      background: rgba(239, 68, 68, .25);
+      border: 1px solid rgba(239, 68, 68, .3);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    #retry-btn:hover {
+      background: rgba(239, 68, 68, .35);
+    }
+
+    /* ─── Results ─── */
+
+    #eco-results {
+      display: none;
+      padding: 0 18px 16px;
+    }
+
+    #eco-results.eco--active {
+      display: block;
+    }
+
+    /* Score Hero */
+
+    .eco-score-hero {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      margin-bottom: 14px;
+    }
+
+    .eco-score-ring {
+      flex-shrink: 0;
+    }
+
+    .eco-score-ring__arc {
+      transition: stroke-dashoffset .6s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .eco-score-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    #score-badge {
+      display: inline-block;
+      width: fit-content;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      padding: 2px 10px;
+      border-radius: 20px;
+    }
+
+    #score-label {
+      font-size: 11px;
+      color: #6b7280;
+      font-weight: 500;
+      margin-top: 1px;
+    }
+
+    /* Pillar Bars */
+
+    .eco-pillars {
+      margin-bottom: 14px;
+    }
+
+    .eco-pillars__title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin-bottom: 8px;
+    }
+
+    .eco-pillar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px;
+    }
+
+    .eco-pillar:last-child {
+      margin-bottom: 0;
+    }
+
+    .eco-pillar__name {
+      width: 90px;
+      flex-shrink: 0;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #d1d5db;
+    }
+
+    .eco-pillar__track {
+      flex: 1;
+      height: 7px;
+      background: #1f2937;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .eco-pillar__fill {
+      height: 100%;
+      border-radius: 4px;
+      width: 0%;
+      transition: width .7s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .eco-pillar__value {
+      width: 28px;
+      text-align: right;
+      font-size: 11px;
+      font-weight: 700;
+      color: #9ca3af;
+    }
+
+    /* Coach Summary */
+
+    .eco-section {
+      margin-bottom: 12px;
+    }
+
+    .eco-section__heading {
+      font-size: 12px;
+      font-weight: 700;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin-bottom: 6px;
+    }
+
+    #coach-summary {
+      font-size: 12.5px;
+      color: #d1d5db;
+      line-height: 1.6;
+      background: rgba(255, 255, 255, .03);
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    /* Smart Swap */
+
+    .eco-swap {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      background: rgba(22, 163, 74, .08);
+      border: 1px solid rgba(22, 163, 74, .2);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+
+    .eco-swap__icon {
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .eco-swap__body {
+      min-width: 0;
+    }
+
+    .eco-swap__label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #22c55e;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    #smart-swap {
+      font-size: 12px;
+      color: #d1d5db;
+      margin-top: 2px;
+      line-height: 1.5;
+    }
+
+    #specific-alt-card {
+      display: none;
+      margin-top: 10px;
+      background: #1f2937;
+      border: 1px solid #374151;
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .eco-alt-product {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #alt-img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      background: #fff;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .eco-alt-details {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    #alt-title {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #f9fafb;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .eco-alt-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #alt-price {
+      font-size: 12px;
+      color: #9ca3af;
+      font-weight: 700;
+    }
+
+    #alt-link {
+      font-size: 10.5px;
+      color: #fff;
+      background: #22c55e;
+      text-decoration: none;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+
+    #alt-link:hover {
+      background: #16a34a;
+    }
+
+    /* Footer */
+
+    .eco-footer {
+      text-align: center;
+      font-size: 10px;
+      color: #374151;
+      padding: 0 18px 12px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="eco-header">
+    <div class="eco-header__icon">
+      <img src="../icons/ecolyzeLogo.png" alt="Ecolyze Logo" class="eco-logo-img">
+    </div>
+    <div class="eco-header__text">
+      <span class="eco-header__brand">Ecolyze</span>
+      <span class="eco-header__tagline">Sustainability Insights</span>
+    </div>
+  </header>
+
+  <div class="eco-divider"></div>
+
+  <!-- ═══ CTA ═══ -->
+  <div id="eco-cta-section">
+    <p>Scan this product page and get a sustainability score in seconds.</p>
+    <button id="analyze-btn"> Analyze Product</button>
+  </div>
+
+  <!-- ═══ LOADING ═══ -->
+  <div id="eco-loading">
+    <div class="eco-loader__leaf">
+      <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#22c55e" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66L7 18c4-2 7-4 9-8" />
+        <path d="M17 8c2-2 4-5 4-7-2 0-5 2-7 4" />
+      </svg>
+    </div>
+    <p class="eco-loader__text">Consulting the Coach…</p>
+    <p class="eco-loader__subtext">Analyzing materials, ethics &amp; durability</p>
+  </div>
+
+  <!-- ═══ ERROR ═══ -->
+  <div id="eco-error">
+    <div class="eco-error__card">
+      <p class="eco-error__title">Oops!</p>
+      <p class="eco-error__msg" id="error-msg">Something went wrong. Please try again.</p>
+      <button id="retry-btn">🔄 Retry</button>
+    </div>
+  </div>
+
+  <!-- ═══ RESULTS ═══ -->
+  <div id="eco-results">
+
+    <!-- Score Hero -->
+    <div class="eco-score-hero">
+      <svg class="eco-score-ring" width="76" height="76" viewBox="0 0 76 76">
+        <circle cx="38" cy="38" r="31" fill="none" stroke="#1f2937" stroke-width="5" />
+        <circle id="score-arc" cx="38" cy="38" r="31" fill="none" stroke="#22c55e" stroke-width="5"
+          stroke-dasharray="194.78" stroke-dashoffset="194.78" stroke-linecap="round" transform="rotate(-90 38 38)"
+          class="eco-score-ring__arc" />
+        <text id="score-number" x="38" y="43" text-anchor="middle" fill="#22c55e" font-size="22" font-weight="800"
+          font-family="Inter,system-ui,sans-serif">—</text>
+      </svg>
+      <div class="eco-score-meta">
+        <span id="score-badge">—</span>
+        <span id="score-label">Eco-Score · out of 100</span>
+      </div>
+    </div>
+
+    <!-- Pillar Breakdown -->
+    <div class="eco-pillars">
+      <h4 class="eco-pillars__title">Pillar Breakdown</h4>
+
+      <div class="eco-pillar" data-pillar="materials">
+        <span class="eco-pillar__name">Materials</span>
+        <div class="eco-pillar__track">
+          <div class="eco-pillar__fill" id="bar-materials"></div>
+        </div>
+        <span class="eco-pillar__value" id="val-materials">—</span>
+      </div>
+
+      <div class="eco-pillar" data-pillar="manufacturing">
+        <span class="eco-pillar__name">Manufacturing</span>
+        <div class="eco-pillar__track">
+          <div class="eco-pillar__fill" id="bar-manufacturing"></div>
+        </div>
+        <span class="eco-pillar__value" id="val-manufacturing">—</span>
+      </div>
+
+      <div class="eco-pillar" data-pillar="ethics">
+        <span class="eco-pillar__name">Ethics</span>
+        <div class="eco-pillar__track">
+          <div class="eco-pillar__fill" id="bar-ethics"></div>
+        </div>
+        <span class="eco-pillar__value" id="val-ethics">—</span>
+      </div>
+
+      <div class="eco-pillar" data-pillar="durability">
+        <span class="eco-pillar__name">Durability</span>
+        <div class="eco-pillar__track">
+          <div class="eco-pillar__fill" id="bar-durability"></div>
+        </div>
+        <span class="eco-pillar__value" id="val-durability">—</span>
+      </div>
+    </div>
+
+    <!-- Coach Summary -->
+    <div class="eco-section">
+      <h4 class="eco-section__heading">Coach Says</h4>
+      <p id="coach-summary">—</p>
+    </div>
+
+    <!-- Smart Swap -->
+    <div class="eco-swap">
+      <svg class="eco-swap__icon" viewBox="0 0 20 20" width="16" height="16" fill="#22c55e">
+        <path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm1 11H9v-2h2v2Zm0-4H9V5h2v4Z" />
+      </svg>
+      <div class="eco-swap__body">
+        <p class="eco-swap__label">Smart Swap</p>
+        <p id="smart-swap">—</p>
+
+        <!-- Fetched Specific Alternative -->
+        <div id="specific-alt-card">
+          <div class="eco-alt-product">
+            <img id="alt-img" src="" alt="" />
+            <div class="eco-alt-details">
+              <span id="alt-title"></span>
+              <div class="eco-alt-row">
+                <span id="alt-price"></span>
+                <a id="alt-link" href="#" target="_blank">Buy Now</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FOOTER ═══ -->
+  <p class="eco-footer">Ecolyze</p>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>

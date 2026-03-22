@@ -1,9 +1,8 @@
 /**
- * extractor.js — DOM-based product data extraction for eBay product pages.
+ * extractor.js — Deep-scrape product data extraction for Amazon product pages.
  *
  * Exports a global `Ecolyze.extractProductData()` function that returns
- * a structured product object.  Selectors include fallbacks so extraction
- * degrades gracefully when eBay tweaks its markup.
+ * a richly-structured product object optimized for LLM sustainability analysis.
  */
 
 // eslint-disable-next-line no-var
@@ -13,118 +12,190 @@ var Ecolyze = window.Ecolyze || {};
   'use strict';
 
   /* ------------------------------------------------------------------ */
-  /*  Helpers                                                            */
+  /* Helpers                                                           */
   /* ------------------------------------------------------------------ */
 
-  /**
-   * Try a list of CSS selectors and return the trimmed textContent of the
-   * first element that matches, or `null`.
-   */
   function textFromSelectors(selectors) {
     for (const sel of selectors) {
       const el = document.querySelector(sel);
       if (el && el.textContent.trim()) {
-        return el.textContent.trim();
+        return el.textContent.replace(/\s+/g, ' ').trim(); // Amazon has lots of hidden whitespace
       }
     }
     return null;
   }
 
-  /**
-   * Try a list of CSS selectors and return the `src` (or `data-src`) of the
-   * first <img> that matches, or `null`.
-   */
   function imgSrcFromSelectors(selectors) {
     for (const sel of selectors) {
       const el = document.querySelector(sel);
       if (el) {
-        return el.src || el.dataset.src || el.getAttribute('src') || null;
+        // Amazon often hides high-res images in data attributes
+        return el.dataset.oldHires || el.getAttribute('data-a-dynamic-image') || el.src || null;
+      }
+    }
+    return null;
+  }
+
+  function attrFromSelectors(selectors, attr) {
+    for (const sel of selectors) {
+      const el = document.querySelector(sel);
+      const val = el?.getAttribute(attr);
+      if (val && val.trim()) {
+        return val.trim();
       }
     }
     return null;
   }
 
   /* ------------------------------------------------------------------ */
-  /*  Field extractors                                                   */
+  /* Field extractors                                                  */
   /* ------------------------------------------------------------------ */
 
   function extractTitle() {
     return textFromSelectors([
-      'h1.x-item-title__mainTitle span.ux-textspans--BOLD',
-      'h1.x-item-title__mainTitle',
-      'h1#itemTitle',
-      'h1[itemprop="name"]',
-      'h1.product-title',
-    ]);
+      '#productTitle',
+      'span#productTitle',
+      'h1.a-size-large'
+    ]) || document.title;
   }
 
   function extractPrice() {
     return textFromSelectors([
-      'div.x-price-primary span.ux-textspans',
-      'span[itemprop="price"]',
-      '#prcIsum',
-      '#mm-saleDscPrc',
-      '.x-price-primary',
+      '#corePrice_feature_div .a-price .a-offscreen',
+      '#priceblock_ourprice',
+      '#priceblock_dealprice',
+      '.a-price .a-offscreen'
     ]);
   }
 
+  /**
+   * Extract Amazon's "About this item" bullet points.
+   */
   function extractDescription() {
-    // eBay often loads the description inside an iframe, so we try the
-    // visible "item specifics" / condition / subtitle text first.
-    const parts = [];
-
-    const subtitle = textFromSelectors([
-      '.x-item-title__subtitle',
-      '#vi-subtitle',
-    ]);
-    if (subtitle) parts.push(subtitle);
-
-    const condition = textFromSelectors([
-      '.x-item-condition-text span.ux-textspans',
-      '#vi-itm-cond',
-      '.condText',
-    ]);
-    if (condition) parts.push(`Condition: ${condition}`);
-
-    // Item specifics (key-value pairs)
-    const specRows = document.querySelectorAll(
-      '.x-about-this-item .ux-labels-values__labels-content, ' +
-      '.x-about-this-item .ux-labels-values__values-content'
-    );
-
-    if (specRows.length >= 2) {
-      const labels = document.querySelectorAll(
-        '.x-about-this-item .ux-labels-values__labels-content'
-      );
-      const values = document.querySelectorAll(
-        '.x-about-this-item .ux-labels-values__values-content'
-      );
-
-      const count = Math.min(labels.length, values.length, 8); // cap at 8
-      for (let i = 0; i < count; i++) {
-        const lbl = labels[i]?.textContent?.trim();
-        const val = values[i]?.textContent?.trim();
-        if (lbl && val) parts.push(`${lbl}: ${val}`);
-      }
+    const bullets = document.querySelectorAll('#feature-bullets li span.a-list-item');
+    if (bullets.length) {
+      return Array.from(bullets)
+        .map(b => b.textContent.trim())
+        .filter(text => text.length > 0)
+        .join(' | ');
     }
 
-    return parts.length ? parts.join(' | ') : null;
+    // Fallback to meta description
+    return attrFromSelectors([
+      'meta[name="description"]',
+    ], 'content');
+  }
+
+  /**
+   * Extract Amazon's Product Details or Technical Details table.
+   */
+  function extractItemSpecifics() {
+    const specifics = {};
+
+    // Strategy 1: The standard product details table
+    const tableRows = document.querySelectorAll('#productDetails_techSpec_section_1 tr, .prodDetTable tr');
+    tableRows.forEach(row => {
+      const keyEl = row.querySelector('th');
+      const valEl = row.querySelector('td');
+      if (keyEl && valEl) {
+        // Remove invisible characters Amazon loves to use
+        const key = keyEl.textContent.replace(/[\u200E\u200F\u202A-\u202E]/g, '').trim();
+        const val = valEl.textContent.replace(/[\u200E\u200F\u202A-\u202E]/g, '').trim();
+        if (key && val) specifics[key] = val;
+      }
+    });
+
+    // Strategy 2: The Detail Bullets list (often used for clothing/books)
+    const detailBullets = document.querySelectorAll('#detailBullets_feature_div li span.a-list-item');
+    detailBullets.forEach(bullet => {
+      const parts = bullet.textContent.split(':');
+      if (parts.length >= 2) {
+        const key = parts[0].replace(/[\u200E\u200F\u202A-\u202E]/g, '').trim();
+        const val = parts.slice(1).join(':').replace(/[\u200E\u200F\u202A-\u202E]/g, '').trim();
+        if (key && val) specifics[key] = val;
+      }
+    });
+
+    // Strategy 3: "Product Overview" table at the top of some pages
+    const overviewRows = document.querySelectorAll('#productOverview_feature_div tr.a-spacing-small');
+    overviewRows.forEach(row => {
+      const keyEl = row.querySelector('td.a-span3 span');
+      const valEl = row.querySelector('td.a-span9 span');
+      if (keyEl && valEl) {
+        specifics[keyEl.textContent.trim()] = valEl.textContent.trim();
+      }
+    });
+
+    return Object.keys(specifics).length ? specifics : null;
+  }
+
+  function extractBrand(itemSpecifics) {
+    // Try byline first ("Brand: Nike" or "Visit the Nike Store")
+    let brand = textFromSelectors(['#bylineInfo']);
+    if (brand) {
+      return brand.replace('Brand:', '').replace('Visit the ', '').replace(' Store', '').trim();
+    }
+
+    // Fallback to item specifics
+    if (itemSpecifics) {
+      return itemSpecifics['Brand'] || itemSpecifics['Brand Name'] || null;
+    }
+    return null;
+  }
+
+  const MATERIAL_KEYWORDS = ['material', 'fabric', 'composition', 'lining', 'material composition'];
+
+  function extractMaterialsRaw(itemSpecifics) {
+    if (!itemSpecifics) return null;
+
+    const hits = [];
+    for (const [key, val] of Object.entries(itemSpecifics)) {
+      const lower = key.toLowerCase();
+      if (MATERIAL_KEYWORDS.some((kw) => lower.includes(kw))) {
+        hits.push(val);
+      }
+    }
+    return hits.length ? hits.join(', ') : null;
+  }
+
+  function extractSellerInfo() {
+    const seller = textFromSelectors([
+      '#merchant-info a',
+      '#sellerProfileTriggerId',
+      '#tabular-buybox-truncate-1 .tabular-buybox-text'
+    ]);
+    // Amazon doesn't display feedback % as easily as eBay, so we leave it null
+    return seller ? { username: seller, feedbackPercentage: null } : null;
+  }
+
+  /**
+   * Amazon doesn't use iframes for descriptions, but they have the A+ content
+   * or main product description block. We kept the function name `extractIframeDescription`
+   * so your background/API scripts don't break.
+   */
+  function extractIframeDescription() {
+    return textFromSelectors([
+      '#productDescription p',
+      '#aplus p'
+    ]);
   }
 
   function extractImageUrl() {
-    return imgSrcFromSelectors([
-      '.ux-image-carousel-item.active img',
-      '.ux-image-carousel-item img',
-      '#icImg',
-      'img[itemprop="image"]',
-      '.img.img500',
-    ]);
+    let img = imgSrcFromSelectors(['#landingImage', '#imgBlkFront']);
+    // Amazon stores multiple resolutions in a JSON string inside data-a-dynamic-image
+    if (img && img.startsWith('{')) {
+      try {
+        const urls = JSON.parse(img);
+        return Object.keys(urls)[0]; // Grab the first (usually highest res) URL
+      } catch (e) {
+        return null;
+      }
+    }
+    return img;
   }
 
   function extractCategory() {
-    const crumbs = document.querySelectorAll(
-      'nav.breadcrumbs a span, .seo-breadcrumbs a span'
-    );
+    const crumbs = document.querySelectorAll('#wayfinding-breadcrumbs_feature_div li span.a-list-item a');
     if (crumbs.length) {
       return Array.from(crumbs)
         .map((s) => s.textContent.trim())
@@ -135,21 +206,23 @@ var Ecolyze = window.Ecolyze || {};
   }
 
   /* ------------------------------------------------------------------ */
-  /*  Public API                                                         */
+  /* Public API                                                        */
   /* ------------------------------------------------------------------ */
 
-  /**
-   * Extract all available product data from the current eBay product page.
-   * @returns {{ title: string|null, price: string|null, description: string|null,
-   *             imageUrl: string|null, category: string|null, url: string }}
-   */
   Ecolyze.extractProductData = function extractProductData() {
+    const itemSpecifics = extractItemSpecifics();
+
     return {
       title: extractTitle(),
       price: extractPrice(),
       description: extractDescription(),
+      itemSpecifics,
+      brand: extractBrand(itemSpecifics),
+      materialsRaw: extractMaterialsRaw(itemSpecifics),
       imageUrl: extractImageUrl(),
       category: extractCategory(),
+      seller: extractSellerInfo(),
+      iframeDescription: extractIframeDescription(), // Re-used for Amazon's long-form description
       url: window.location.href,
     };
   };
